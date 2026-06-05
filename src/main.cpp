@@ -13,6 +13,7 @@ int main(int argc, char* argv[]) {
     std::cout << std::unitbuf;
     std::cerr << std::unitbuf;
 
+    // get the server socket file descriptor
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd < 0) {
         std::cerr << "Failed to create server socket: " << std::endl;
@@ -56,9 +57,9 @@ int main(int argc, char* argv[]) {
     
     // TODO: Uncomment the code below to pass the first stage
     // 
-    // int client_fd = accept(server_fd, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len);
-    // std::cout << "Client connected\n";
-    // close(client_fd);
+    int client_fd = accept(server_fd, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len);
+    std::cout << "Client connected\n";
+    close(client_fd);
 
     close(server_fd);
     return 0;
