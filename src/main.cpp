@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include "common/byte_buffer.hpp"
 
 bool read_exact(int fd, void* buffer, size_t size) {
     char* cursor = static_cast<char*>(buffer);
@@ -40,20 +41,6 @@ bool write_exact(int fd, const void* buffer, size_t size) {
     }
 
     return true;
-}
-
-int16_t read_int16(const std::vector<char>& buffer, size_t& offset) {
-    int16_t network_value = 0;
-    std::memcpy(&network_value, buffer.data() + offset, sizeof(network_value));
-    offset += sizeof(network_value);
-    return ntohs(network_value);
-}
-
-int32_t read_int32(const std::vector<char>& buffer, size_t& offset) {
-    int32_t network_value = 0;
-    std::memcpy(&network_value, buffer.data() + offset, sizeof(network_value));
-    offset += sizeof(network_value);
-    return ntohl(network_value);
 }
 
 int main(int argc, char* argv[]) {
@@ -125,10 +112,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    size_t offset = 0;
-    int16_t api_key = read_int16(request, offset);
-    int16_t api_version = read_int16(request, offset);
-    int32_t correlation_id = read_int32(request, offset);
+    Reader reader(request);
+    int16_t api_key = reader.read_int16();
+    int16_t api_version = reader.read_int16();
+    int32_t correlation_id = reader.read_int32();
+
 
     std::cerr << "api_key=" << api_key << "\n";
     std::cerr << "api_version=" << api_version << "\n";
