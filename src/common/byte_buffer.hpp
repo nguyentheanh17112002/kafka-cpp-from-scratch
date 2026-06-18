@@ -20,6 +20,7 @@ class Writer{
     public:
         void write_int32(int32_t value);
         void write_int16(int16_t value);
+        void write_int8(int8_t value);
         void write_bytes(const std::vector<char>& bytes);
         const std::vector<char>& data() const;
 };

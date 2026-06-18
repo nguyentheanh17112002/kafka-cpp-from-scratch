@@ -45,6 +45,10 @@ void Writer::write_int16(int16_t value){
     data_.insert(data_.end(), bytes, bytes + sizeof(int16_t));
 }
 
+void Writer::write_int8(int8_t value){
+    data_.push_back(static_cast<char>(value));
+}
+
 void Writer::write_bytes(const std::vector<char>& bytes){
     data_.insert(data_.end(), bytes.begin(), bytes.end());
 }
