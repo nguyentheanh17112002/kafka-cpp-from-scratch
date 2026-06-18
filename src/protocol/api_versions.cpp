@@ -12,12 +12,10 @@ std::vector<char> handle_api_versions(RequestHeader& header) {
     Writer writer;
     if (api_version < 0 || api_version > 4){
         // Handle invalid API version
-        writer.write_int32(correlation_id);
         writer.write_int16(static_cast<int16_t>(ErrorCode::UNSUPPORTED_VERSION));
     }
     else {
         // Handle valid API version
-        writer.write_int32(correlation_id);
         writer.write_int16(static_cast<int16_t>(ErrorCode::NONE));
     }
     return writer.data();
