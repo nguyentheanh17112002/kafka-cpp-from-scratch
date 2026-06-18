@@ -37,3 +37,14 @@ void Writer::write_int32(int32_t value){
     std::memcpy(bytes, &network_value, sizeof(int32_t));
     data_.insert(data_.end(), bytes, bytes + sizeof(int32_t));
 }
+
+void Writer::write_int16(int16_t value){
+    int16_t network_value = htons(value);
+    char bytes[sizeof(int16_t)];
+    std::memcpy(bytes, &network_value, sizeof(int16_t));
+    data_.insert(data_.end(), bytes, bytes + sizeof(int16_t));
+}
+
+void Writer::write_bytes(const std::vector<char>& bytes){
+    data_.insert(data_.end(), bytes.begin(), bytes.end());
+}

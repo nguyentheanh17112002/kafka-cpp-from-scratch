@@ -1,12 +1,18 @@
 #include "protocol/handler.hpp"
+#include "protocol/api_versions.hpp"
+#include "protocol/request.hpp"
 
-std::vector<char> handle_request(Reader& reader) {
-    int16_t api_key = reader.read_int16();
-    int16_t api_version = reader.read_int16();
-    int32_t correlation_id = reader.read_int32();
-
+std::vector<char> build_response(int32_t correlation_id, const std::vector<char> &response_data)
+{
     Writer writer;
-    writer.write_int32(sizeof(correlation_id));
-    writer.write_int32(correlation_id);
+    writer.write_int32(response_data.size());
+    writer.write_bytes(response_data);
     return writer.data();
+}
+
+std::vector<char> handle_request(Reader &reader)
+{
+    RequestHeader header = parse_request_header(reader);
+    std::vector<char> response_data = handle_api_versions(header);
+    return build_response(header.correlation_id, response_data);
 }
