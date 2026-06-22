@@ -15,4 +15,5 @@ class TcpServer {
     private:
         int server_fd_;
         std::function<std::vector<char>(Reader&)> handler_;
+        void handle_connection(int client_fd);
 };

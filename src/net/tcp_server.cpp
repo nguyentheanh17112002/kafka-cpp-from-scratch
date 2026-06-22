@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <sys/socket.h>
+#include <thread>
 
 TcpServer::TcpServer(uint16_t port)
 {
@@ -47,6 +48,25 @@ void TcpServer::set_handler(std::function<std::vector<char>(Reader &)> handler)
     handler_ = std::move(handler);
 };
 
+void TcpServer::handle_connection(int client_fd)
+{
+    try
+    {
+        Connection connection(client_fd);
+        while (true)
+        {
+            Reader request = connection.read_request();
+            std::vector<char> response = handler_(request);
+            connection.send(response);
+        }
+    }
+    catch (const std::exception &e)
+    {
+        // Handle the exception, e.g., log it or close the connection
+        std::cerr << "Error handling connection: " << e.what() << std::endl;
+    }
+}
+
 void TcpServer::run()
 {
     while (true)
@@ -57,19 +77,9 @@ void TcpServer::run()
             continue; // Accept failed, try again
         }
 
-        try
-        {
-            Connection connection(client_fd);
-            while(true)
-            {
-                Reader request = connection.read_request();
-                std::vector<char> response = handler_(request);
-                connection.send(response);
-            }
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << "Error handling connection: " << e.what() << std::endl;
-        }
+        std::thread([client_fd, this]() {
+            this->handle_connection(client_fd);
+        }).detach();
     }
 };
+
