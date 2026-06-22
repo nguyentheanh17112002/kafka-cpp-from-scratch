@@ -11,6 +11,7 @@ Connection::~Connection() {
 
 Reader Connection::read_request() {
     int32_t message_size_network = 0;
+
     if (!read_exact(&message_size_network, sizeof(message_size_network))) {
         throw std::runtime_error("Failed to read request size");
     }

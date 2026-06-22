@@ -60,9 +60,12 @@ void TcpServer::run()
         try
         {
             Connection connection(client_fd);
-            Reader request = connection.read_request();
-            std::vector<char> response = handler_(request);
-            connection.send(response);
+            while(true)
+            {
+                Reader request = connection.read_request();
+                std::vector<char> response = handler_(request);
+                connection.send(response);
+            }
         }
         catch (const std::exception &e)
         {
