@@ -6,10 +6,7 @@
 
 ApiKeyVersion api_versions[] = {
     {18, 0, 4}, // API_VERSIONS
-    {0, 0, 2},  // PRODUCE
-    {1, 0, 7},  // FETCH
-    {3, 0, 3},  // LIST_OFFSETS
-    {4, 0, 3}   // METADATA
+    {75, 0, 0}   // DESCRIBE_TOPIC_PARTITIONS
 };
 
 std::vector<char> handle_api_versions(RequestHeader &header)
