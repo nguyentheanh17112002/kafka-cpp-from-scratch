@@ -4,7 +4,7 @@
 #include <vector>
 #include <cstdint>
 
-ApiKeyVersion api_versions[] = {
+ApiKeyVersion api_key_versions[] = {
     {18, 0, 4}, // API_VERSIONS
     {75, 0, 0}   // DESCRIBE_TOPIC_PARTITIONS
 };
@@ -20,8 +20,8 @@ std::vector<char> handle_api_versions(RequestHeader &header)
     else
     {
         writer.write_int16(static_cast<int16_t>(ErrorCode::NONE));
-        writer.write_int8(sizeof(api_versions) / sizeof(ApiKeyVersion) + 1); // length of api_versions array
-        for (const auto &api : api_versions)
+        writer.write_int8(sizeof(api_key_versions) / sizeof(ApiKeyVersion) + 1); // length of api_key_versions array
+        for (const auto &api : api_key_versions)
         {
             writer.write_int16(api.api_key);
             writer.write_int16(api.min_version);

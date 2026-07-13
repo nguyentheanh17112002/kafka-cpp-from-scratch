@@ -7,6 +7,15 @@ Reader::Reader(std::vector<char> data){
     data_ = std::move(data);
 }
 
+int8_t Reader::read_int8(){
+    if(offset_ + sizeof(int8_t) > data_.size()){
+        throw std::out_of_range("Not enough data to read int8");
+    }
+    int8_t value = static_cast<int8_t>(data_[offset_]);
+    offset_ += sizeof(int8_t);
+    return value;
+}
+
 int16_t Reader::read_int16(){
     if(offset_ + sizeof(int16_t) > data_.size()){
         throw std::out_of_range("Not enough data to read int16");
@@ -25,6 +34,26 @@ int32_t Reader::read_int32(){
     std::memcpy(&value, &data_[offset_], sizeof(int32_t));
     offset_ += sizeof(int32_t);
     return ntohl(value);
+}
+
+uint64_t Reader::read_unsigned_varint() {
+    uint64_t value = 0;
+    int shift = 0;
+    while (true) {
+        if (offset_ >= data_.size()) {
+            throw std::out_of_range("Not enough data to read unsigned varint");
+        }
+        uint8_t byte = static_cast<uint8_t>(data_[offset_++]);
+        value |= static_cast<uint64_t>(byte & 0x7F) << shift;
+        if ((byte & 0x80) == 0) {
+            break;
+        }
+        shift += 7;
+        if (shift >= 64) {
+            throw std::overflow_error("Unsigned varint is too large");
+        }
+    }
+    return value;
 }
 
 const std::vector<char>& Writer::data() const{
@@ -51,4 +80,17 @@ void Writer::write_int8(int8_t value){
 
 void Writer::write_bytes(const std::vector<char>& bytes){
     data_.insert(data_.end(), bytes.begin(), bytes.end());
+}
+
+void Writer::write_unsigned_varint(uint64_t value) {
+    while (value > 0x7F) {
+        data_.push_back(static_cast<char>((value & 0x7F) | 0x80));
+        value >>= 7;
+    }
+    data_.push_back(static_cast<char>(value));
+}
+
+void Writer::write_compact_string(const std::string& str) {
+    write_unsigned_varint(str.size() + 1);
+    data_.insert(data_.end(), str.begin(), str.end());
 }
