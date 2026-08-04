@@ -2,7 +2,23 @@
 #include "protocol/errors.hpp"
 #include "metadata/metadata_store.hpp"
 #include<array>
+#include<algorithm>
 
+static std::vector<std::string> get_topic_names(Reader& reader, uint64_t num_topics) {
+    std::vector<std::string> topic_names;
+    for (uint64_t i = 0; i < num_topics; ++i) {
+        uint64_t topic_name_length = reader.read_unsigned_varint();
+        std::string topic_name;
+        for (uint64_t j = 0; j < topic_name_length - 1; ++j) {
+            topic_name += reader.read_int8();
+        }
+        topic_names.push_back(topic_name);
+        reader.read_unsigned_varint(); // read tag buffer 
+    }
+    // sort the topic names in lexicographical order
+    std::sort(topic_names.begin(), topic_names.end());
+    return topic_names;
+}
 
 std::vector<char> handle_describe_topic_partitions(RequestHeader &header, Reader& reader) {
     Writer writer;
@@ -12,22 +28,15 @@ std::vector<char> handle_describe_topic_partitions(RequestHeader &header, Reader
     // hardcode throttling_time_ms to 0
     writer.write_int32(0); 
 
-    uint64_t num_topics = reader.read_unsigned_varint(); // read number of topics from request
-    // write number of topics to response
-    writer.write_unsigned_varint(num_topics);
+    uint64_t num_topics = reader.read_unsigned_varint() - 1; // read number of topics from request
+    
+    writer.write_unsigned_varint(num_topics + 1); // +1 for the compact array length encoding
 
     MetadataStore store;
     store.load("/tmp/kraft-combined-logs/__cluster_metadata-0/00000000000000000000.log"); //hard code
 
-    for (uint64_t i = 0; i < num_topics - 1; ++i) {
-        uint64_t topic_name_length = reader.read_unsigned_varint();
-        std::string topic_name;
-        for (uint64_t j = 0; j < topic_name_length - 1; ++j) {
-            topic_name += reader.read_int8();
-        }
-        // read empty tagged fields
-        reader.read_unsigned_varint();
-        
+    std::vector<std::string> topic_names = get_topic_names(reader, num_topics);
+    for (const auto& topic_name : topic_names) {  
         const Topic* topic = store.find_topic(topic_name);
         if (topic) {
             writer.write_int16(static_cast<int16_t>(ErrorCode::NONE));
