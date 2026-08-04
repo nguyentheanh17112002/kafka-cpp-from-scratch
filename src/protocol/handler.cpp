@@ -3,6 +3,7 @@
 #include "protocol/request.hpp"
 #include "protocol/api_keys.hpp"
 #include "protocol/describe_topic_partitions.hpp"
+#include "protocol/fetch.hpp"
 
 std::vector<char> build_response(int32_t correlation_id, const std::vector<char> &response_data)
 {
@@ -20,7 +21,7 @@ std::vector<char> handle_request(Reader &reader)
 
     switch (static_cast<APIKey>(header.api_key)) {
         case APIKey::FETCH:
-            // Handle FETCH request (not implemented in this snippet)
+            response_data = handle_fetch(header, reader);
             break;
         case APIKey::API_VERSIONS:
             response_data = handle_api_versions(header);
