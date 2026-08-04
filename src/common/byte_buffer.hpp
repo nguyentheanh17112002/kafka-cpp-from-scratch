@@ -26,6 +26,7 @@ class Writer{
     private:
         std::vector<char> data_;
     public:
+        void write_int64(int64_t value);
         void write_int32(int32_t value);
         void write_int16(int16_t value);
         void write_int8(int8_t value);

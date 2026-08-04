@@ -21,13 +21,13 @@ std::vector<char> handle_request(Reader &reader)
 
     switch (static_cast<APIKey>(header.api_key)) {
         case APIKey::FETCH:
-            response_data = handle_fetch(header, reader);
+            response_data = handle_fetch(reader);
             break;
         case APIKey::API_VERSIONS:
             response_data = handle_api_versions(header);
             break;
         case APIKey::DESCRIBE_TOPIC_PARTITIONS:
-            response_data = handle_describe_topic_partitions(header, reader);
+            response_data = handle_describe_topic_partitions(reader);
             break;
         default:
             break;

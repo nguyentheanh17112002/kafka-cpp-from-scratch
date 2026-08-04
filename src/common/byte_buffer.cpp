@@ -94,6 +94,13 @@ const std::vector<char>& Writer::data() const{
     return data_;
 }
 
+void Writer::write_int64(int64_t value) {
+    int64_t network_value = htobe64(value);
+    char bytes[sizeof(int64_t)];
+    std::memcpy(bytes, &network_value, sizeof(int64_t));
+    data_.insert(data_.end(), bytes, bytes + sizeof(int64_t));
+}
+
 void Writer::write_int32(int32_t value){
     int32_t network_value = htonl(value);
     char bytes[sizeof(int32_t)];

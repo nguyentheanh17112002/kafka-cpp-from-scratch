@@ -3,4 +3,4 @@
 #include "common/byte_buffer.hpp"
 #include "protocol/request.hpp"
 
-std::vector<char> handle_fetch(RequestHeader &header, Reader& reader);
+std::vector<char> handle_fetch(Reader& reader);

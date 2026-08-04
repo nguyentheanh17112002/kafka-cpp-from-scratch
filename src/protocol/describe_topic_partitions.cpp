@@ -20,7 +20,7 @@ static std::vector<std::string> get_topic_names(Reader& reader, uint64_t num_top
     return topic_names;
 }
 
-std::vector<char> handle_describe_topic_partitions(RequestHeader &header, Reader& reader) {
+std::vector<char> handle_describe_topic_partitions(Reader& reader) {
     Writer writer;
     // write response header v1 tag buffer 
     writer.write_unsigned_varint(0); 
