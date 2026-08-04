@@ -18,11 +18,14 @@ std::vector<char> handle_request(Reader &reader)
     RequestHeader header = parse_request_header(reader);
     std::vector<char> response_data;
 
-    switch (header.api_key) {
-        case static_cast<int16_t>(APIKey::API_VERSIONS):
+    switch (static_cast<APIKey>(header.api_key)) {
+        case APIKey::FETCH:
+            // Handle FETCH request (not implemented in this snippet)
+            break;
+        case APIKey::API_VERSIONS:
             response_data = handle_api_versions(header);
             break;
-        case static_cast<int16_t>(APIKey::DESCRIBE_TOPIC_PARTITIONS):
+        case APIKey::DESCRIBE_TOPIC_PARTITIONS:
             response_data = handle_describe_topic_partitions(header, reader);
             break;
         default:

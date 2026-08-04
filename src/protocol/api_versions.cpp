@@ -5,6 +5,7 @@
 #include <cstdint>
 
 ApiKeyVersion api_key_versions[] = {
+    {1, 0, 16},
     {18, 0, 4}, // API_VERSIONS
     {75, 0, 0}   // DESCRIBE_TOPIC_PARTITIONS
 };
