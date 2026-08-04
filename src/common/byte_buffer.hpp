@@ -14,7 +14,12 @@ class Reader{
         int8_t read_int8();
         int16_t read_int16();
         int32_t read_int32();
+        int64_t read_int64();
+        int64_t read_signed_varint();
         uint64_t read_unsigned_varint();
+        bool has_reamining_data() const;
+        size_t position() const;
+        std::vector<char> read_bytes(size_t length);
 };
 
 class Writer{

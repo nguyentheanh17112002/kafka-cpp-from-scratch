@@ -1,6 +1,7 @@
 #include"byte_buffer.hpp"
 #include<cstring>
 #include<arpa/inet.h>
+#include<endian.h>
 #include<stdexcept>
 
 Reader::Reader(std::vector<char> data){
@@ -36,6 +37,22 @@ int32_t Reader::read_int32(){
     return ntohl(value);
 }
 
+int64_t Reader::read_int64() {
+    if (offset_ + sizeof(int64_t) > data_.size()) {
+        throw std::out_of_range("Not enough data to read int64");
+    }
+    int64_t value;
+    std::memcpy(&value, &data_[offset_], sizeof(int64_t));
+    offset_ += sizeof(int64_t);
+    return be64toh(value);
+}
+
+int64_t Reader::read_signed_varint() {
+    uint64_t value = read_unsigned_varint();
+    value = (value >> 1) ^ -(value & 1); // Zigzag decoding
+    return static_cast<int64_t>(value);
+}
+
 uint64_t Reader::read_unsigned_varint() {
     uint64_t value = 0;
     int shift = 0;
@@ -54,6 +71,23 @@ uint64_t Reader::read_unsigned_varint() {
         }
     }
     return value;
+}
+
+bool Reader::has_reamining_data() const {
+    return offset_ < data_.size();
+}
+
+size_t Reader::position() const {
+    return offset_;
+}
+
+std::vector<char> Reader::read_bytes(size_t length) {
+    if (offset_ + length > data_.size()) {
+        throw std::out_of_range("Not enough data to read bytes");
+    }
+    std::vector<char> bytes(data_.begin() + offset_, data_.begin() + offset_ + length);
+    offset_ += length;
+    return bytes;
 }
 
 const std::vector<char>& Writer::data() const{
