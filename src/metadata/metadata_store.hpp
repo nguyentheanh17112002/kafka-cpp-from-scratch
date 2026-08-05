@@ -4,7 +4,7 @@
 #include "metadata/metadata_types.hpp"
 
 std::vector<char> read_file(const std::string& filename);
-
+void append_file(const std::string& filename, const std::vector<char>& data);
 class MetadataStore {
     public:
         void load(const std::string& filename);

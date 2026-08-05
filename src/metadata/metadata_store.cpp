@@ -8,6 +8,12 @@ std::vector<char> read_file(const std::string& filename) {
     return std::vector<char>((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 }
 
+void append_file(const std::string& filename, const std::vector<char>& data) {
+    std::ofstream file(filename, std::ios::binary | std::ios::app);
+    if (!file) return;
+    file.write(data.data(), data.size());
+}
+
 void MetadataStore::load(const std::string& filename) {
     std::vector<char> bytes = read_file(filename);
     topics_ = parse_metadata_log(bytes);

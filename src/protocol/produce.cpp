@@ -60,6 +60,8 @@ std::vector<char> handle_produce(Reader& reader, MetadataStore& store) {
                 writer.write_unsigned_varint(0); // error message
                 writer.write_unsigned_varint(0); // tag buffer
             } else {
+                std::string file_path = "/tmp/kraft-combined-logs/" + produce_topic.topic_name + "-" + std::to_string(produce_partition.partition_index) + "/00000000000000000000.log";
+                append_file(file_path, produce_partition.record_batch);
                 writer.write_int16(static_cast<int16_t>(ErrorCode::NONE));
                 writer.write_int64(0); // offset
                 writer.write_int64(-1); // log append time
