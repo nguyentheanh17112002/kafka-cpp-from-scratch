@@ -2,7 +2,6 @@
 #include "protocol/errors.hpp"
 #include <vector>
 #include <array>
-#include <iostream>
 
 struct FetchTopic {
     std::array<uint8_t, 16> topic_id;
