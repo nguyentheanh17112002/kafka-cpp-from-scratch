@@ -5,6 +5,7 @@
 #include "protocol/describe_topic_partitions.hpp"
 #include "protocol/fetch.hpp"
 #include "metadata/metadata_store.hpp"
+#include "protocol/produce.hpp"
 
 std::vector<char> build_response(int32_t correlation_id, const std::vector<char> &response_data)
 {
@@ -21,6 +22,9 @@ std::vector<char> handle_request(Reader &reader, MetadataStore &store)
     std::vector<char> response_data;
 
     switch (static_cast<APIKey>(header.api_key)) {
+        case APIKey::PRODUCE:
+            response_data = handle_produce(reader, store);
+            break;
         case APIKey::FETCH:
             response_data = handle_fetch(reader, store);
             break;
