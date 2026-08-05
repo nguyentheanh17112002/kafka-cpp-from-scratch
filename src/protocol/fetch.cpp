@@ -56,9 +56,9 @@ std::vector<char> handle_fetch(Reader& reader, MetadataStore& store) {
     for (const auto& fetch_topic : fetch_topics){
         writer.write_bytes(std::vector<char>(fetch_topic.topic_id.begin(), fetch_topic.topic_id.end()));
         writer.write_unsigned_varint(fetch_topic.partitions.size() + 1); 
+        const Topic* topic = store.find_topic_by_id(fetch_topic.topic_id);
         for (const auto& partition_index : fetch_topic.partitions){
             writer.write_int32(partition_index);
-            const Topic* topic = store.find_topic_by_id(fetch_topic.topic_id);
             if (!topic) {
                 writer.write_int16(static_cast<int16_t>(ErrorCode::UNKNOWN_TOPIC_ID));
                 writer.write_int64(0); // high watermark
@@ -76,8 +76,11 @@ std::vector<char> handle_fetch(Reader& reader, MetadataStore& store) {
             writer.write_int64(0); // log start offset
             writer.write_unsigned_varint(1); // aborted transactions
             writer.write_int32(-1); // preferred read replica
-            writer.write_unsigned_varint(0); // record: null 
-            writer.write_unsigned_varint(0); // partition tag buffer
+            std::string topic_path = "/tmp/kraft-combined-logs/" + topic->name + "-" + std::to_string(partition_index) + "/00000000000000000000.log";
+            std::vector<char> log_bytes = read_file(topic_path);
+            writer.write_unsigned_varint(log_bytes.size() + 1); // record: length
+            writer.write_bytes(log_bytes); // record: data
+            writer.write_unsigned_varint(0); // record: tag buffer
         }
         writer.write_unsigned_varint(0); // topic tag buffer
     }
