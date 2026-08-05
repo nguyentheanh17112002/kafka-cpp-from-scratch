@@ -22,6 +22,15 @@ const Topic* MetadataStore::find_topic(const std::string& topic_name) {
     return nullptr;
 }
 
+const Topic* MetadataStore::find_topic_by_id(const std::array<uint8_t, 16>& topic_id) {
+    for (auto& topic : topics_) {
+        if (topic.topic_id == topic_id) {
+            return &topic;
+        }
+    }
+    return nullptr;
+}
+
 
 
 

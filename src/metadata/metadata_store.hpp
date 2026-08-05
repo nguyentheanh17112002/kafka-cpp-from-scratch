@@ -9,6 +9,7 @@ class MetadataStore {
     public:
         void load(const std::string& filename);
         const Topic* find_topic(const std::string& topic_name);
+        const Topic* find_topic_by_id(const std::array<uint8_t, 16>& topic_id);
     private:
         std::vector<Topic> topics_;
 };

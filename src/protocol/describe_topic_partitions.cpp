@@ -20,7 +20,7 @@ static std::vector<std::string> get_topic_names(Reader& reader, uint64_t num_top
     return topic_names;
 }
 
-std::vector<char> handle_describe_topic_partitions(Reader& reader) {
+std::vector<char> handle_describe_topic_partitions(Reader& reader, MetadataStore& store) {
     Writer writer;
     // write response header v1 tag buffer 
     writer.write_unsigned_varint(0); 
@@ -31,9 +31,6 @@ std::vector<char> handle_describe_topic_partitions(Reader& reader) {
     uint64_t num_topics = reader.read_unsigned_varint() - 1; // read number of topics from request
     
     writer.write_unsigned_varint(num_topics + 1); // +1 for the compact array length encoding
-
-    MetadataStore store;
-    store.load("/tmp/kraft-combined-logs/__cluster_metadata-0/00000000000000000000.log"); //hard code
 
     std::vector<std::string> topic_names = get_topic_names(reader, num_topics);
     for (const auto& topic_name : topic_names) {  

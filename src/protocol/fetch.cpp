@@ -2,20 +2,14 @@
 #include "protocol/errors.hpp"
 #include <vector>
 #include <array>
+#include <iostream>
 
 struct FetchTopic {
     std::array<uint8_t, 16> topic_id;
     std::vector<int32_t> partitions;
 };
 
-std::vector<char> handle_fetch(Reader& reader) {
-    reader.read_int32(); // max wait ms
-    reader.read_int32(); // min bytes
-    reader.read_int32(); // max bytes
-    reader.read_int8(); // isolation level
-    reader.read_int32(); // session id
-    reader.read_int32(); // session epoch
-
+static std::vector<FetchTopic> read_fetch_topics(Reader& reader) {
     uint64_t num_topics = reader.read_unsigned_varint() - 1; // read number of topics from request
     std::vector<FetchTopic> fetch_topics;
     for (uint64_t i = 0; i < num_topics; ++i){
@@ -38,10 +32,21 @@ std::vector<char> handle_fetch(Reader& reader) {
         reader.read_unsigned_varint(); // tag buffer for topic
         fetch_topics.push_back({topic_id, partitions});
     }
+    return fetch_topics;
+}
 
+
+std::vector<char> handle_fetch(Reader& reader, MetadataStore& store) {
+    reader.read_int32(); // max wait ms
+    reader.read_int32(); // min bytes
+    reader.read_int32(); // max bytes
+    reader.read_int8(); // isolation level
+    reader.read_int32(); // session id
+    reader.read_int32(); // session epoch
+
+    std::vector<FetchTopic> fetch_topics = read_fetch_topics(reader);
 
     Writer writer;
-
     writer.write_unsigned_varint(0); // respone header tag buffer
     writer.write_int32(0); // throttle time ms
     writer.write_int16(static_cast<int16_t>(ErrorCode::NONE)); // error code
@@ -53,7 +58,19 @@ std::vector<char> handle_fetch(Reader& reader) {
         writer.write_unsigned_varint(fetch_topic.partitions.size() + 1); 
         for (const auto& partition_index : fetch_topic.partitions){
             writer.write_int32(partition_index);
-            writer.write_int16(static_cast<int16_t>(ErrorCode::UNKNOWN_TOPIC_ID)); 
+            const Topic* topic = store.find_topic_by_id(fetch_topic.topic_id);
+            if (!topic) {
+                writer.write_int16(static_cast<int16_t>(ErrorCode::UNKNOWN_TOPIC_ID));
+                writer.write_int64(0); // high watermark
+                writer.write_int64(0); // last stable offset
+                writer.write_int64(0); // log start offset
+                writer.write_unsigned_varint(1); // aborted transactions
+                writer.write_int32(-1); // preferred read replica
+                writer.write_unsigned_varint(0); // record: null 
+                writer.write_unsigned_varint(0); // partition tag buffer
+                continue;
+            }
+            writer.write_int16(static_cast<int16_t>(ErrorCode::NONE));
             writer.write_int64(0); // high watermark
             writer.write_int64(0); // last stable offset
             writer.write_int64(0); // log start offset

@@ -1,5 +1,6 @@
 #include "net/tcp_server.hpp"
 #include "net/connection.hpp"
+#include "metadata/metadata_store.hpp"
 #include <unistd.h>
 #include <stdexcept>
 #include <arpa/inet.h>
@@ -46,7 +47,7 @@ TcpServer::~TcpServer()
 void TcpServer::set_handler(std::function<std::vector<char>(Reader &)> handler)
 {
     handler_ = std::move(handler);
-};
+}
 
 void TcpServer::handle_connection(int client_fd)
 {

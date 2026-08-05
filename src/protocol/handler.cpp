@@ -4,6 +4,7 @@
 #include "protocol/api_keys.hpp"
 #include "protocol/describe_topic_partitions.hpp"
 #include "protocol/fetch.hpp"
+#include "metadata/metadata_store.hpp"
 
 std::vector<char> build_response(int32_t correlation_id, const std::vector<char> &response_data)
 {
@@ -14,20 +15,20 @@ std::vector<char> build_response(int32_t correlation_id, const std::vector<char>
     return writer.data();
 }
 
-std::vector<char> handle_request(Reader &reader)
+std::vector<char> handle_request(Reader &reader, MetadataStore &store)
 {
     RequestHeader header = parse_request_header(reader);
     std::vector<char> response_data;
 
     switch (static_cast<APIKey>(header.api_key)) {
         case APIKey::FETCH:
-            response_data = handle_fetch(reader);
+            response_data = handle_fetch(reader, store);
             break;
         case APIKey::API_VERSIONS:
             response_data = handle_api_versions(header);
             break;
         case APIKey::DESCRIBE_TOPIC_PARTITIONS:
-            response_data = handle_describe_topic_partitions(reader);
+            response_data = handle_describe_topic_partitions(reader, store);
             break;
         default:
             break;
